@@ -1,0 +1,8 @@
+import { requireProfile, type Profile } from '@/lib/auth';
+import { ProfileForm, RoleForm } from '@/components/forms';
+export default async function Settings() {
+  const { supabase, profile } = await requireProfile();
+  const team = profile.role === 'admin' ? await supabase.from('profiles').select('id,full_name,email,role').order('created_at') : null;
+  if (team?.error) throw new Error('Unable to load team members.');
+  return <><span className="eyebrow">WORKSPACE</span><h1>Settings</h1><p className="muted">Manage your profile and workspace access.</p><div className="settings-grid"><section className="panel"><h2>Your profile</h2><ProfileForm profile={profile}/></section><section className="panel access-panel"><span className="badge">{profile.role === 'admin' ? 'Admin' : 'Sales user'}</span><h2>Your workspace access</h2><p className="muted">{profile.role === 'admin' ? 'You can view your team and manage their roles.' : 'You can access the sales workspace and update your own profile.'}</p><p className="muted">Accounts and password resets are managed by your administrator through Supabase Authentication.</p></section></div>{team && <section className="panel team-panel"><h2>Team members</h2><p className="muted">New accounts start as sales users. Your own role is protected from changes here.</p><div className="table-wrap"><table><thead><tr><th>Team member</th><th>Access</th></tr></thead><tbody>{(team.data as Profile[]).map(user => <tr key={user.id}><td><strong>{user.full_name || 'Team member'}</strong><span className="table-email">{user.email}</span></td><td><RoleForm user={user} self={user.id === profile.id}/></td></tr>)}</tbody></table></div></section>}</>;
+}
