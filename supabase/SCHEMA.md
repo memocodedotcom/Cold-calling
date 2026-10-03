@@ -48,4 +48,10 @@ Calls and meetings are canonical records in their own tables. There is no automa
 
 `npm test` runs both migrations in embedded PostgreSQL with an auth schema fixture. It verifies all seven table workflows, assignment isolation, reassignment, actor spoofing, anonymous denial, valid statuses, score bounds, nonnegative durations, matching contact/company relationships, orphan prevention, and history preservation when users are deleted. Test fixtures are never inserted into the live project.
 
+## Security-definer function grants
+
+Supabase grants `EXECUTE` on new public functions directly to `anon` and `authenticated`, so `revoke ... from public` alone does not remove API access. Migration `0008_definer_grants.sql` revokes anonymous access to `is_admin`, `can_access_lead`, `can_access_company`, and `set_user_role`, and revokes all API access to the trigger-only `sync_auth_profile`. Signed-in access to the first four remains intentional because RLS policies and the team settings page depend on it; the Supabase advisor's "signed-in users can execute" warning for those four is expected. Any new security-definer function must revoke `anon` explicitly. `tests/definer-grants.test.mjs` reproduces Supabase's default grants and fails if an anonymous grant remains.
+
+Migration 0008 was applied to the connected Supabase project on 3 October 2026.
+
 References: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [PostgreSQL policies](https://www.postgresql.org/docs/17/ddl-rowsecurity.html).

@@ -21,7 +21,7 @@ test('CRM schema and access boundaries', async (t) => {
       $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
       grant usage on schema auth, public to anon, authenticated;
       grant execute on function auth.uid() to anon, authenticated;`);
-    for (const file of ['0001_foundation.sql', '0002_crm.sql', '0003_lead_crm.sql', '0004_lead_import.sql', '0005_calling.sql', '0006_timeline.sql', '0007_scoring.sql']) {
+    for (const file of ['0001_foundation.sql', '0002_crm.sql', '0003_lead_crm.sql', '0004_lead_import.sql', '0005_calling.sql', '0006_timeline.sql', '0007_scoring.sql', '0008_definer_grants.sql']) {
       await db.exec(await readFile(new URL('../supabase/migrations/' + file, import.meta.url), 'utf8'));
     }
     for (const [id, name] of [[admin,'Admin'],[alice,'Alice'],[bob,'Bob']]) {
